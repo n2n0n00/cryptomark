@@ -14,12 +14,13 @@ const Home = () => {
   const handleScroll = (direction) => {
     const { current } = scrollRef;
 
+    // if window width = 1800 then move by 270 otherwise move by 210
     const scrollAmount = window.innerWidth > 1800 ? 270 : 210;
 
     if (direction === "left") {
-      current.scrollLeft -= 100;
+      current.scrollLeft -= scrollAmount;
     } else {
-      current.scrollLeft += 100;
+      current.scrollLeft += scrollAmount;
     }
   };
 
