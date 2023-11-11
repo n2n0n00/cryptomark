@@ -76,7 +76,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="flexBetween w-full fixed z-10 p-4 flex-row border-b dark:border-nft-black-1 border-nft-gray-1">
+    <nav className="flexBetween w-full fixed z-10 p-4 flex-row border-b dark:bg-nft-dark bg-white dark:border-nft-black-1 border-nft-gray-1">
       <div className="flex flex-1 flex-row justify-start">
         <Link href="./">
           <div
@@ -95,7 +95,7 @@ const Navbar = () => {
             </p>
           </div>
         </Link>
-        <Link href="/">
+        <Link href="/" className="">
           <div className="hidden md:flex" onClick={() => {}}>
             <Image
               src={images.logo02}
