@@ -1,17 +1,29 @@
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable quotes */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { Banner, CreatorCard, NFTCard } from "../components";
 import images from "../assets/index";
 import { makeid } from "../utils/makeId";
+import { NFTContext } from "../context/NFTContext";
 
 const Home = () => {
+  const { fetchNFTs } = useContext(NFTContext);
   const [hideButtons, setHideButtons] = useState(false);
   const parentRef = useRef(null);
   const scrollRef = useRef(null);
   const { theme } = useTheme();
+  const [NFTs, setNFTs] = useState([]);
+
+  useEffect(() => {
+    fetchNFTs().then((items) => {
+      setNFTs(items);
+
+      console.log(items);
+    });
+  }, []);
+
   const handleScroll = (direction) => {
     const { current } = scrollRef;
 
@@ -117,7 +129,10 @@ const Home = () => {
               </h1>
               <div>Search Bar</div>
               <div className="mt-3 w-full flex flex-wrap md:justify-center justify-center">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+                {NFTs.map((nft) => (
+                  <NFTCard key={nft.tokenId} nft={nft} />
+                ))}
+                {/* {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
                   <NFTCard
                     key={`nft-${i}`}
                     nft={{
@@ -129,7 +144,7 @@ const Home = () => {
                       description: "Cool NFT for sale!",
                     }}
                   />
-                ))}
+                ))} */}
               </div>
             </div>
           </div>

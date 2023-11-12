@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-concat */
+/* eslint-disable global-require */
 /* eslint-disable react/jsx-curly-newline */
 /* eslint-disable comma-dangle */
 /* eslint-disable implicit-arrow-linebreak */
@@ -9,8 +11,10 @@ import { useRouter } from "next/router";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import { useTheme } from "next-themes";
+
 import { Button, Input } from "../components/index";
 import images from "../assets/index";
+import { NFTContext } from "../context/NFTContext";
 
 const CreateNFTs = () => {
   const [fileUrl, setFileUrl] = useState(null);
@@ -20,9 +24,16 @@ const CreateNFTs = () => {
     description: "",
   });
   const { theme } = useTheme();
+  const router = useRouter();
+
+  const { uploadToInfuraIPFS, createNFT } = useContext(NFTContext);
 
   // upload image to IPFS
-  const onDrop = useCallback(() => {}, []);
+
+  const onDrop = useCallback(async (acceptedFile) => {
+    const url = await uploadToInfuraIPFS(acceptedFile[0]);
+    setFileUrl(url);
+  }, []);
 
   const {
     getRootProps,
@@ -117,7 +128,7 @@ const CreateNFTs = () => {
           <Button
             btnName="Create NFT"
             classStyles="rounded-xl"
-            handleClick={() => {}}
+            handleClick={() => createNFT(formInput, fileUrl, router)}
           />
         </div>
       </div>

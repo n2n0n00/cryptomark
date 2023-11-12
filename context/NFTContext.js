@@ -1,10 +1,13 @@
+/* eslint-disable global-require */
+/* eslint-disable comma-dangle */
 /* eslint-disable no-unused-vars */
 /* eslint-disable quotes */
 import React, { useState, useEffect } from "react";
 import Web3Modal from "web3modal";
 import { ethers } from "ethers";
 import axios from "axios";
-
+import { create as ipfsHttpClient } from "ipfs-http-client";
+import { Buffer } from "buffer";
 import { MarketAddress, MarketAddressABI } from "./constants";
 
 export const NFTContext = React.createContext();
@@ -30,9 +33,28 @@ export const NFTProvider = ({ children }) => {
     console.log({ accounts });
   };
 
-  useEffect(() => {
-    checkIfWalletIsConnected();
-  }, []);
+  // connect to ipfs through infura api method after 2022 starts here:
+
+  const ipfsClient = require("ipfs-http-client");
+  const projectId = "2Y4c5wsGemTP4vZbSoPrRdHvs9z";
+  const projectSecret = "e2ff34904239a90be1c5ef952f4904d4";
+  const auth = `Basic ${Buffer.from(`${projectId}:${projectSecret}`).toString(
+    "base64"
+  )}`;
+
+  const client = ipfsClient.create({
+    host: "ipfs.infura.io",
+    port: 5001,
+    protocol: "https",
+    headers: {
+      authorization: auth,
+    },
+  });
+
+  // ends here
+
+  const fetchContract = (signerOrProvider) =>
+    new ethers.Contract(MarketAddress, MarketAddressABI, signerOrProvider);
 
   const connectWallet = async () => {
     // check again if a user has installed metamask
@@ -47,10 +69,105 @@ export const NFTProvider = ({ children }) => {
     window.location.reload();
   };
 
-  const uploadToIPFS = async;
+  const uploadToInfuraIPFS = async (file) => {
+    try {
+      const added = await client.add({ content: file });
+
+      const url = `https://cryptomark.infura-ipfs.io/ipfs/${added.path}`;
+
+      return url;
+    } catch (error) {
+      console.log("Error uploading file: ", error);
+    }
+  };
+
+  // declaring the parameters
+  const createSale = async (url, formInputPrice, isReselling, id) => {
+    const web3modal = new Web3Modal();
+    const connection = await web3modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner(); // who is creating the nft
+    const price = ethers.utils.parseUnits(formInputPrice, "ether"); // using parseUnits because we are using human readable format
+    const contract = fetchContract(signer);
+    const listingPrice = await contract.getListingPrice();
+    const transaction = await contract.createToken(url, price, {
+      value: listingPrice.toString(),
+    });
+    await transaction.wait();
+  };
+
+  const fetchNFTs = async () => {
+    const provider = new ethers.providers.JsonRpcBatchProvider();
+    // to fetch all nfts in the marketplace use provider instead of signer
+    const contract = fetchContract(provider);
+
+    // an array of promises that contain the nft data
+    const data = await contract.fetchMarketItems();
+
+    // fetch all nfts promises simultaneously and then map over to get the data for each nft
+    const items = await Promise.all(
+      data.map(async ({ tokenId, seller, owner, price: unformattedPrice }) => {
+        const tokenURI = await contract.tokenURI(tokenId);
+        // to get the title and description of the nft as metadata, thus we destructure the response into data and data into the properties
+        const {
+          data: { image, name, description },
+        } = await axios.get(tokenURI);
+
+        // to get the price, we are using formatUnits because we are reading from a very big number into a human readable number
+        const price = ethers.utils.formatUnits(
+          unformattedPrice.toString(),
+          "ether"
+        );
+
+        return {
+          price,
+          tokeId: tokenId.toNumber(),
+          seller,
+          owner,
+          image,
+          description,
+          name,
+          tokenURI,
+        };
+      })
+    );
+
+    return items;
+  };
+
+  const createNFT = async (formInput, fileUrl, router) => {
+    const { name, description, price } = formInput;
+    if (!name || !description || !price || !fileUrl) return;
+    const data = JSON.stringify({ name, description, image: fileUrl });
+
+    try {
+      const added = await client.add(data);
+      const url = `https://cryptomark.infura-ipfs.io/ipfs/${added.path}`;
+
+      // passing in the arguments
+      await createSale(url, price);
+
+      router.push("/");
+    } catch (error) {
+      console.log("Error uploading file: ", error);
+    }
+  };
+
+  useEffect(() => {
+    checkIfWalletIsConnected();
+  }, []);
 
   return (
-    <NFTContext.Provider value={{ nftCurrency, connectWallet, currentAccount }}>
+    <NFTContext.Provider
+      value={{
+        nftCurrency,
+        connectWallet,
+        currentAccount,
+        uploadToInfuraIPFS,
+        createNFT,
+        fetchNFTs,
+      }}
+    >
       {children}
     </NFTContext.Provider>
   );
