@@ -47,8 +47,10 @@ export const NFTProvider = ({ children }) => {
     window.location.reload();
   };
 
+  const uploadToIPFS = async;
+
   return (
-    <NFTContext.Provider value={{ nftCurrency, connectWallet }}>
+    <NFTContext.Provider value={{ nftCurrency, connectWallet, currentAccount }}>
       {children}
     </NFTContext.Provider>
   );
