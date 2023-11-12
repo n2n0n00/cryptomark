@@ -83,10 +83,10 @@ const NFTDetails = () => {
               You already own NFT!
             </p>
           ) : (
-            // <Button
-            //   btnName={`Buy for ${nft.price} ${nftCurrency}`}
-            //   classStyles="mr-5 sm:mr-0 rounded-xl"
-            // />
+            <Button
+              btnName={`Buy for ${nft.price} ${nftCurrency}`}
+              classStyles="mr-5 sm:mr-0 rounded-xl"
+            />
           )}
         </div>
       </div>
