@@ -6,7 +6,6 @@ import React, { useState, useEffect } from "react";
 import Web3Modal from "web3modal";
 import { ethers } from "ethers";
 import axios from "axios";
-import { create as ipfsHttpClient } from "ipfs-http-client";
 import { Buffer } from "buffer";
 import { MarketAddress, MarketAddressABI } from "./constants";
 
@@ -14,6 +13,8 @@ export const NFTContext = React.createContext();
 
 export const NFTProvider = ({ children }) => {
   const [currentAccount, setCurrentAccount] = useState("");
+  const [isLoadingNFT, setIsLoadingNFT] = useState(false);
+
   const nftCurrency = "ETH";
 
   const checkIfWalletIsConnected = async () => {
@@ -192,6 +193,34 @@ export const NFTProvider = ({ children }) => {
     return items;
   };
 
+  const buyNft = async (nft) => {
+    const web3Modal = new Web3Modal();
+
+    const connection = await web3Modal.connect();
+
+    const provider = new ethers.providers.Web3Provider(connection);
+
+    const signer = provider.getSigner();
+
+    const contract = new ethers.Contract(
+      MarketAddress,
+      MarketAddressABI,
+      signer
+    );
+
+    const price = ethers.utils.parseUnits(nft.price.toString(), "ether");
+    console.log("i am working up to here!");
+    const transaction = await contract.createMarketSale(nft.tokenId, {
+      value: price,
+    });
+    console.log("Error here 8");
+    setIsLoadingNFT(true);
+
+    await transaction.wait();
+
+    setIsLoadingNFT(false);
+  };
+
   useEffect(() => {
     checkIfWalletIsConnected();
   }, []);
@@ -206,6 +235,8 @@ export const NFTProvider = ({ children }) => {
         createNFT,
         fetchNFTs,
         fetchMyNFTsOrListedNFTs,
+        buyNft,
+        isLoadingNFT,
       }}
     >
       {children}
