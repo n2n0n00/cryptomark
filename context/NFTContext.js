@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 /* eslint-disable global-require */
 /* eslint-disable comma-dangle */
 /* eslint-disable no-unused-vars */
@@ -91,9 +92,13 @@ export const NFTProvider = ({ children }) => {
     const price = ethers.utils.parseUnits(formInputPrice, "ether"); // using parseUnits because we are using human readable format
     const contract = fetchContract(signer);
     const listingPrice = await contract.getListingPrice();
-    const transaction = await contract.createToken(url, price, {
-      value: listingPrice.toString(),
-    });
+    const transaction = !isReselling
+      ? await contract.createToken(url, price, {
+          value: listingPrice.toString(),
+        })
+      : await contract.resellToken(id, price, {
+          value: listingPrice.toString(),
+        });
     await transaction.wait();
   };
 
@@ -237,6 +242,7 @@ export const NFTProvider = ({ children }) => {
         fetchMyNFTsOrListedNFTs,
         buyNft,
         isLoadingNFT,
+        createSale,
       }}
     >
       {children}
