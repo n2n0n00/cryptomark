@@ -99,10 +99,12 @@ export const NFTProvider = ({ children }) => {
       : await contract.resellToken(id, price, {
           value: listingPrice.toString(),
         });
+    setIsLoadingNFT(true);
     await transaction.wait();
   };
 
   const fetchNFTs = async () => {
+    setIsLoadingNFT(false);
     const provider = new ethers.providers.JsonRpcBatchProvider();
     // to fetch all nfts in the marketplace use provider instead of signer
     const contract = fetchContract(provider);
@@ -160,6 +162,7 @@ export const NFTProvider = ({ children }) => {
   };
 
   const fetchMyNFTsOrListedNFTs = async (type) => {
+    setIsLoadingNFT(false);
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);

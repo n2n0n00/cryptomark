@@ -85,7 +85,7 @@ const checkActive = (active, setActive, router) => {
     case "/my-nfts":
       if (!active || active !== "My NFTs") setActive("My NFTs");
       break;
-    case "/create-nft":
+    case "/create-nfts":
       setActive("");
       break;
 
@@ -165,7 +165,11 @@ const Navbar = () => {
         <div className="md:hidden flex">
           <MenuItem active={active} setActive={setActive} />
           <div className="ml-4">
-            <ButtonGroup setActive={setActive} router={router} />
+            <ButtonGroup
+              setActive={setActive}
+              router={router}
+              setIsOpen={setIsOpen}
+            />
           </div>
         </div>
       </div>
