@@ -38,8 +38,8 @@ export const NFTProvider = ({ children }) => {
   // connect to ipfs through infura api method after 2022 starts here:
 
   const ipfsClient = require("ipfs-http-client");
-  const projectId = "2Y4c5wsGemTP4vZbSoPrRdHvs9z";
-  const projectSecret = "e2ff34904239a90be1c5ef952f4904d4";
+  const projectId = 'ADD YOUR PROJECT ID HERE;
+  const projectSecret = 'ADD YOUR PROJECT SECRET KEY HERE;
   const auth = `Basic ${Buffer.from(`${projectId}:${projectSecret}`).toString(
     "base64"
   )}`;
